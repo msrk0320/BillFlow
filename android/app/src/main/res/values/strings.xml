@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">RickshawFlow</string>
+    <string name="title_activity_main">RickshawFlow</string>
+    <string name="package_name">com.rickshawflow.app</string>
+    <string name="custom_url_scheme">com.rickshawflow.app</string>
+</resources>

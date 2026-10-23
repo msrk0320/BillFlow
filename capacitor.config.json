@@ -1,0 +1,18 @@
+{
+  "appId": "com.rickshawflow.app",
+  "appName": "RickshawFlow",
+  "webDir": "dist",
+  "backgroundColor": "#020617",
+  "plugins": {
+    "FirebaseAuthentication": {
+      "skipNativeAuth": true,
+      "providers": [
+        "google.com"
+      ]
+    },
+    "SplashScreen": {
+      "launchShowDuration": 0,
+      "backgroundColor": "#020617"
+    }
+  }
+}

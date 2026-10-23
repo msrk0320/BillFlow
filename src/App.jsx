@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Dashboard from './components/Dashboard';
 import RidesTab from './components/RidesTab';
 import ExpensesTab from './components/ExpensesTab';
@@ -20,6 +20,7 @@ import { LayoutDashboard, ReceiptText, Fuel, BarChart3, LogOut, Loader2, AlertTr
 import { auth, googleProvider, db, isConfigValid } from './firebase';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 import { doc, collection, onSnapshot, setDoc, deleteDoc } from 'firebase/firestore';
+import { isNative, signInWithGoogleNative, signOutNative, onHardwareBack, exitApp } from './native';
 
 function playChime(soundEnabled, type = 'success') {
   if (!soundEnabled) return;
@@ -309,6 +310,26 @@ export default function App() {
 
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
+  // Android hardware back: close the topmost overlay, then return to dashboard, then exit.
+  const backHandlerRef = useRef(null);
+  useEffect(() => {
+    backHandlerRef.current = () => {
+      if (deleteConfirm) setDeleteConfirm(null);
+      else if (isRideModalOpen) { setIsRideModalOpen(false); setEditingRide(null); }
+      else if (isExpenseModalOpen) { setIsExpenseModalOpen(false); setEditingExpense(null); }
+      else if (isBillModalOpen) { setIsBillModalOpen(false); setEditingBill(null); }
+      else if (isPersonalExpenseModalOpen) { setIsPersonalExpenseModalOpen(false); setEditingPersonalExpense(null); }
+      else if (fabOpen) setFabOpen(false);
+      else if (menuOpen) setMenuOpen(false);
+      else if (activeTab !== 'dashboard') setActiveTabState('dashboard');
+      else exitApp();
+    };
+  });
+  useEffect(() => {
+    if (!isNative) return;
+    return onHardwareBack(() => backHandlerRef.current());
+  }, []);
+
   // Listen to Auth State
   useEffect(() => {
     if (!isConfigValid || !auth) {
@@ -438,7 +459,8 @@ export default function App() {
   const handleSignIn = async () => {
     setAuthLoading(true);
     try {
-      await signInWithPopup(auth, googleProvider);
+      if (isNative) await signInWithGoogleNative(auth);
+      else await signInWithPopup(auth, googleProvider);
     } catch (err) {
       console.error(err);
       alert('Failed to sign in. Please check your credentials/network.');
@@ -451,6 +473,7 @@ export default function App() {
     if (window.confirm('Are you sure you want to sign out?')) {
       try {
         await signOut(auth);
+        if (isNative) await signOutNative();
       } catch (err) {
         console.error(err);
       }

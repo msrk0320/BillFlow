@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getAuth, initializeAuth, indexedDBLocalPersistence, GoogleAuthProvider } from 'firebase/auth';
+import { Capacitor } from '@capacitor/core';
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -24,9 +25,14 @@ let db = null;
 if (isConfigValid) {
   try {
     app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
+    auth = Capacitor.isNativePlatform()
+      ? initializeAuth(app, { persistence: indexedDBLocalPersistence })
+      : getAuth(app);
     googleProvider = new GoogleAuthProvider();
-    db = getFirestore(app);
+    // Offline cache: rides logged without signal are queued and synced later.
+    db = initializeFirestore(app, {
+      localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+    });
   } catch (err) {
     console.error("Firebase initialization failed:", err);
   }

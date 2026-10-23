@@ -332,3 +332,18 @@ textarea:focus {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Android WebView performance: blur, big filters and idle loops are costly on phone GPUs */
+.native .glass-panel,
+.native .glass-card,
+.native [class*="backdrop-blur"] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.native .glass-panel { background: rgba(15, 23, 42, 0.92); box-shadow: none; }
+.native .glass-card { background: rgba(15, 23, 42, 0.85); box-shadow: none; }
+.native [class*="blur-3xl"] { display: none; }
+.native .animate-pulse { animation: none; }
+.native .transition-all {
+  transition-property: color, background-color, border-color, opacity, transform;
+}
